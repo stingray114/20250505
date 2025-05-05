@@ -59,6 +59,34 @@ function draw() {
           circle(keypoint.x, keypoint.y, 16);
         }
 
+        // Check if the thumb (keypoints[4]) is touching the circle
+        if (hand.keypoints.length > 4) {
+          let thumb = hand.keypoints[4];
+          let distanceToCircle = dist(thumb.x, thumb.y, circleX, circleY);
+
+          // If the thumb is touching the circle, move the circle and draw trajectory
+          if (distanceToCircle < circleSize / 2) {
+            if (isDrawing) {
+              // Draw a green line from the last position to the current position
+              stroke(0, 255, 0);
+              strokeWeight(10); // Set line thickness to 10
+              line(lastX, lastY, thumb.x, thumb.y);
+            }
+
+            // Update the circle position
+            circleX = thumb.x;
+            circleY = thumb.y;
+
+            // Update the last position and enable drawing
+            lastX = thumb.x;
+            lastY = thumb.y;
+            isDrawing = true;
+          } else {
+            // If the thumb is not touching the circle, stop drawing
+            isDrawing = false;
+          }
+        }
+
         // Check if the index finger (keypoints[8]) is touching the circle
         if (hand.keypoints.length > 8) {
           let indexFinger = hand.keypoints[8];
@@ -82,7 +110,7 @@ function draw() {
             lastY = indexFinger.y;
             isDrawing = true;
           } else {
-            // If the finger is not touching the circle, stop drawing
+            // If the index finger is not touching the circle, stop drawing
             isDrawing = false;
           }
         }
