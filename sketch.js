@@ -4,6 +4,11 @@
 let video;
 let handPose;
 let hands = [];
+let circleX = 320; // Initial x position of the circle
+let circleY = 240; // Initial y position of the circle
+let circleSize = 100; // Diameter of the circle
+let isDrawing = false; // Flag to track if we should draw the trajectory
+let lastX, lastY; // Variables to store the last position of the finger
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -30,6 +35,11 @@ function setup() {
 function draw() {
   image(video, 0, 0);
 
+  // Draw the circle
+  fill(0, 255, 0, 150); // Semi-transparent green
+  noStroke();
+  ellipse(circleX, circleY, circleSize, circleSize);
+
   // Ensure at least one hand is detected
   if (hands.length > 0) {
     for (let hand of hands) {
@@ -47,6 +57,34 @@ function draw() {
 
           noStroke();
           circle(keypoint.x, keypoint.y, 16);
+        }
+
+        // Check if the index finger (keypoints[8]) is touching the circle
+        if (hand.keypoints.length > 8) {
+          let indexFinger = hand.keypoints[8];
+          let distanceToCircle = dist(indexFinger.x, indexFinger.y, circleX, circleY);
+
+          // If the index finger is touching the circle, move the circle and draw trajectory
+          if (distanceToCircle < circleSize / 2) {
+            if (isDrawing) {
+              // Draw a red line from the last position to the current position
+              stroke(255, 0, 0);
+              strokeWeight(10); // Set line thickness to 10
+              line(lastX, lastY, indexFinger.x, indexFinger.y);
+            }
+
+            // Update the circle position
+            circleX = indexFinger.x;
+            circleY = indexFinger.y;
+
+            // Update the last position and enable drawing
+            lastX = indexFinger.x;
+            lastY = indexFinger.y;
+            isDrawing = true;
+          } else {
+            // If the finger is not touching the circle, stop drawing
+            isDrawing = false;
+          }
         }
 
         // Draw lines connecting keypoints 0 to 4
